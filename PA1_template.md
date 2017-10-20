@@ -1,17 +1,14 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-author: "Hector Munoz"
-output: 
-  html_document:
-    keep_md: true
----
-```{r setoptions, echo = TRUE}
+# Reproducible Research: Peer Assessment 1
+Hector Munoz  
+
+```r
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
 ## Loading and preprocessing the data
-```{r load, echo = TRUE}
+
+```r
     suppressPackageStartupMessages(suppressWarnings(library(dplyr)))
     suppressPackageStartupMessages(suppressWarnings(library(data.table)))
     suppressPackageStartupMessages(suppressWarnings(library(dtplyr)))
@@ -26,36 +23,73 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ## What is mean total number of steps taken per day?
-```{r}
+
+```r
     total_steps <- activity[,.(total_steps = sum(steps, na.rm = T)), by =date]
     
     hist(total_steps$total_steps, col = "red",
          xlab = "Total Steps", main = "Total Steps Histogram")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
+
+```r
     (total_steps[,mean(total_steps)]) # Mean steps per day
+```
+
+```
+## [1] 9354.23
+```
+
+```r
     (total_steps[,median(total_steps)]) # Median steps per day
+```
+
+```
+## [1] 10395
 ```
 
 
 
 ## What is the average daily activity pattern?
-```{r}
+
+```r
         average_steps <- activity[,.(average_steps = mean(steps, na.rm = T)), by =date]
         
         ggthemr("pale")
         ggplot(average_steps, aes(x = date, y = average_steps)) +
             geom_line() + xlab("Interval") + ylab("Average Steps") +
             ggtitle("Average number of steps") 
-        
+```
+
+```
+## Warning: Removed 2 rows containing missing values (geom_path).
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+```r
             max_row <- which.max(average_steps$average_steps)
             (average_steps[max_row,date]) # The 5 minute intervals in november the 23rd are on average the highest
+```
+
+```
+## [1] "2012-11-23"
 ```
 
 
 
 ## Imputing missing values
-```{r}
+
+```r
         (activity[is.na(steps), .N])
-        
+```
+
+```
+## [1] 2304
+```
+
+```r
         mean_steps <- activity[,.(mean_steps = mean(steps, na.rm = T)), by = date]
         mean_steps[is.na(mean_steps), mean_steps := 0]
         imputed_activity <- copy(activity) %>% merge(y = mean_steps, by = "date") %>% tbl_dt()
@@ -67,16 +101,36 @@ knitr::opts_chunk$set(echo = TRUE)
         total_steps_imputed <- imputed_activity[,.(total_steps = sum(steps, na.rm = T)), by =date]
         hist(total_steps_imputed$total_steps, col = "red",
              xlab = "Total Steps", main = "Total Steps Histogram (Imputed)")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
         (total_steps_imputed[,mean(total_steps)]) # Mean steps per day
+```
+
+```
+## [1] 9354.23
+```
+
+```r
         (total_steps_imputed[,median(total_steps)]) # Median steps per day
+```
+
+```
+## [1] 10395
+```
+
+```r
         # histogram and means are the same, so is the median
 ```
 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
-        weekend_ <- c("sábado","domingo")
+
+```r
+        weekend_ <- c("sÃ¡bado","domingo")
         activity[!weekdays(date) %in% weekend_, day_type:= "Weekday"]
         activity[weekdays(date) %in% weekend_, day_type:= "Weekend"]
         activity[, day_type:= as.factor(day_type)]
@@ -87,7 +141,11 @@ knitr::opts_chunk$set(echo = TRUE)
         ggplot(average_steps_daytype, aes(x = interval, y = average_steps)) +
             geom_line() + facet_grid(day_type~.) + ylab("Average Steps") + xlab("Interval") +
             ggtitle("Number of steps")
-        
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+```r
         # The number of steps in the weekends seems to be higher, indicating more activity 
 ```
 
